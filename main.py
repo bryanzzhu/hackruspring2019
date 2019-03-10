@@ -66,13 +66,13 @@ twilio_client = Client(TWILIO_SID, TWILIO_AUTH)
 # don't forget to install ngrok and update your active number webhooks once it's running
 # choco install ngrok.portable
 # ngrok http -host-header="localhost:8000" 8000
-ngrok_url = 'https://38646b86.ngrok.io'
+ngrok_url = 'https://fa0be0c9.ngrok.io'
 
 coord_areas = [dict(
     location='Denver, CO',
     latitude=39.7392,
     longitude=-104.9903,
-    radius=100,
+    radius=100.0,
     distance=EARTH_RADIUS*math.pi,
     alert='Welcome to Denver!',
     entered=False,
@@ -123,9 +123,11 @@ def alertmap():
                 else:
                     temp_tts = True
                 if request.form.get("text_alert_message").strip() == '':
-                    temp_alert = ''.join([request.form.get("text_alert_location"), '\nYou have something you need to do here.'])
+                    # temp_alert = ''.join([request.form.get("text_alert_location"), '\nYou have something you need to do here.'])
+                    temp_alert = 'You have something you need to do here.'
                 else:
-                    temp_alert = ''.join([request.form.get("text_alert_location"), '\n', request.form.get("text_alert_message")])
+                    # temp_alert = ''.join([request.form.get("text_alert_location"), '\n', request.form.get("text_alert_message")])
+                    temp_alert = request.form.get("text_alert_message")
                 coord_areas.append(dict(
                     location=request.form.get("text_alert_location"),
                     latitude=geocoded_location['results'][0]['geometry']['location']['lat'],
@@ -154,7 +156,7 @@ def alertmap():
             if area['tts'] == False:
                 send_sms(''.join([area['location'], '\n', area['alert']]))
             else:
-                send_tts(''.join([area['location'], '\n', area['alert']]))
+                send_tts(''.join([area['location'], '\n...', area['alert']]))
     coord_table = CoordTable(coord_areas)
     encoded_area_coords = circle_markers(coord_areas)  # only generate on coord change? kinda wasteful to do it each time
     str_loc = ''.join([str(lat), ',', str(lon)])
@@ -185,7 +187,7 @@ def sms():
     if len(body) < 3:
         return
     if body[0:3].lower() == 'ack':
-        call_history = twilio_client.messages.list()
+        msg_history = twilio_client.messages.list()
         # https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior
         # Fri, 04 Sep 2015 22:54:41 +0000
         # %a, %m %b %Y %H:%M:%S %z
@@ -239,8 +241,9 @@ def voice():
             return str(resp)
         else:
             resp.say("Sorry, I don't understand that choice.")
+            resp.pause(length=1)
     gather = Gather(num_digits=1)
-    gather.say(''.join([request.values['msg'], 'To acknowledge, press 1. To delay, press 2.']))
+    gather.say(''.join([request.values['msg'], '...To acknowledge, press 1. To delay, press 2.']))
     resp.append(gather)
     preencode = {'msg':request.values['msg']}
     resp.redirect(''.join(['/voice?', urllib.parse.urlencode(preencode)]), code=307)
