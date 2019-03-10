@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>DriveBy Alert Map</title>
+	<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/showmap.css') }}">
+</head>
+<body>
+	<div class="content">
+		<div class="container">
+			<div class="main">
+				<p>{{ coord_table }}</p>
+				<form name="new_location" method="post">
+					<h3>
+					DriveBy Location : <input type="text" name="text_alert_location"><br>
+					DriveBy Alert Radius (in miles): <input type="text" name="text_alert_radius"><br>
+					DriveBy Alert Message: <input type="text" name="text_alert_message"><br>
+					Message Format:<br>
+					<input type="radio" name="tts" value="sms" checked> SMS (text message)<br>
+					<input type="radio" name="tts" value="tts"> TTS (voice call)<br>
+					</h3>
+					<input type="submit" name="submit" value="Add">
+					<input type="submit" name="submit" value="Delete">
+				</form>
+				<img class="img-responsive" src="{{ map_img }}" alt="Map">
+			</div>
+		</div>
+	</div>
+</body>
+</html>
