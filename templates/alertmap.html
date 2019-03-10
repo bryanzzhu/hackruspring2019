@@ -8,20 +8,20 @@
 	<div class="content">
 		<div class="container">
 			<div class="main">
+				<img class="img-responsive" src="{{ map_img }}" alt="Map">
 				<p>{{ coord_table }}</p>
 				<form name="new_location" method="post">
 					<h3>
-					DriveBy Location : <input type="text" name="text_alert_location"><br>
+					DriveBy Location : <input type="text" name="text_alert_location" size="60"><br>
 					DriveBy Alert Radius (in miles): <input type="text" name="text_alert_radius"><br>
-					DriveBy Alert Message: <input type="text" name="text_alert_message"><br>
+					DriveBy Alert Message: <input type="text" name="text_alert_message" size="60"><br>
 					Message Format:<br>
 					<input type="radio" name="tts" value="sms" checked> SMS (text message)<br>
 					<input type="radio" name="tts" value="tts"> TTS (voice call)<br>
 					</h3>
-					<input type="submit" name="submit" value="Add">
-					<input type="submit" name="submit" value="Delete">
+					<input class="btn" type="submit" name="submit" value="Add">
+					<input class="btn" type="submit" name="submit" value="Delete">
 				</form>
-				<img class="img-responsive" src="{{ map_img }}" alt="Map">
 			</div>
 		</div>
 	</div>

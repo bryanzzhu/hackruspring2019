@@ -47,8 +47,8 @@ EARTH_RADIUS = 3958.8
 MAPS_API_KEY = ''  # CENSORED
 MAPS_STATIC_URL_START = 'https://maps.googleapis.com/maps/api/staticmap?center='
 MAPS_MARKER = '&markers='
-MAP_SIZE_WIDTH = '640'  # max size for free accounts
-MAP_SIZE_HEIGHT = '640'  # max size for free accounts
+MAP_SIZE_WIDTH = '640'  # max size is 640 for free accounts
+MAP_SIZE_HEIGHT = '480'  # max size is 640 for free accounts
 MAP_SIZE = ''.join(['&size=', MAP_SIZE_WIDTH, 'x', MAP_SIZE_HEIGHT])
 MAP_SCALE = '&scale=2'  # max scaling for free accounts
 MAP_ZOOM = '&zoom=7'
