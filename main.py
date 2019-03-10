@@ -156,7 +156,7 @@ def alertmap():
             if area['tts'] == False:
                 send_sms(''.join([area['location'], '\n', area['alert']]))
             else:
-                send_tts(''.join([area['location'], '\n...', area['alert']]))
+                send_tts(''.join([area['location'], '\n... ', area['alert']]))
     coord_table = CoordTable(coord_areas)
     encoded_area_coords = circle_markers(coord_areas)  # only generate on coord change? kinda wasteful to do it each time
     str_loc = ''.join([str(lat), ',', str(lon)])
@@ -199,7 +199,7 @@ def sms():
         coord_areas = [area for area in coord_areas if area['location'] != most_recent_msg.body.splitlines()[0]]
         resp.message('Alert resolved, awesome!')
     elif body[0:3].lower() == 'del':
-        resp.message('Got it, maybe next time then.')
+        resp.message('Got it, maybe next time.')
     return str(resp)
 
 
@@ -237,13 +237,13 @@ def voice():
             resp.say('Alert resolved, awesome!')
             return str(resp)
         elif choice == '2':
-            resp.say('Got it, maybe next time then.')
+            resp.say('Got it, maybe next time.')
             return str(resp)
         else:
             resp.say("Sorry, I don't understand that choice.")
             resp.pause(length=1)
     gather = Gather(num_digits=1)
-    gather.say(''.join([request.values['msg'], '...To acknowledge, press 1. To delay, press 2.']))
+    gather.say(''.join([request.values['msg'], ' ... To acknowledge, press 1. To delay, press 2.']))
     resp.append(gather)
     preencode = {'msg':request.values['msg']}
     resp.redirect(''.join(['/voice?', urllib.parse.urlencode(preencode)]), code=307)
