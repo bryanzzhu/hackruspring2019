@@ -20,3 +20,4 @@ This project was submitted to the following hackathon challenges:
 
 * Twilio "Best use of the Twilio API" challenge
 
+* "Best Solo Hack" challenge

@@ -17,6 +17,7 @@ import datetime
 # HackRU Spring 2019
 # SmartCar "Best Car App" challenge
 # Twilio "Best use of the Twilio API" challenge
+# "Best Solo Hack" challenge
 
 # https://pypi.org/project/smartcar/
 # https://developers.google.com/maps/documentation/maps-static/intro
