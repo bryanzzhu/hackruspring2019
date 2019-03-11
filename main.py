@@ -15,7 +15,9 @@ import datetime
 
 # Bryan Zhu
 # HackRU Spring 2019
-# SmartCar "Best Car App" challenge
+
+# Submitted to the following hackathon challenges:
+# SmartCar "Best Car App" challenge (RUNNER-UP!)
 # Twilio "Best use of the Twilio API" challenge
 # "Best Solo Hack" challenge
 
@@ -26,11 +28,31 @@ import datetime
 app = Flask(__name__)
 CORS(app)
 
-# global variable to save SmartCar access_token
+PORT = 8000
+
+# SmartCar Authorization & Access Credentials
 CLIENT_ID = ''  # CENSORED
 CLIENT_SECRET = ''  # CENSORED
-REDIRECT_URI = 'http://localhost:8000/exchange'
+REDIRECT_URI = ''.join(['http://localhost:', str(PORT), '/exchange'])
 smartcar_access = None
+
+# Google Maps API Authorization & Access Credentials
+MAPS_API_KEY = ''  # CENSORED
+
+# Twilio Authorization & Access Credentials
+TWILIO_SID = ''  # CENSORED
+TWILIO_AUTH = ''  # CENSORED
+TWILIO_NUMBER = '+10000000000'  # CENSORED
+TWILIO_DEFAULT_TO = '+10000000000'  # CENSORED
+
+# ngrok local Forwarding Address
+# in terminal: `ngrok http -host-header="localhost:YOUR_PORT_HERE" YOUR_PORT_HERE`
+# don't forget to update your Twilio active number webhooks once this is running
+ngrok_url = 'https://34953dbe.ngrok.io'
+
+# Earth radius
+# units given by user should be consistent with the units used by this constant
+EARTH_RADIUS = 3958.8  # miles
 
 smartcar_client = smartcar.AuthClient(
     client_id=CLIENT_ID,
@@ -40,33 +62,17 @@ smartcar_client = smartcar.AuthClient(
     test_mode=True
 )
 
-# earth radius in miles; units given by user should be consistent
-EARTH_RADIUS = 3958.8
-
-# Google Maps API
-MAPS_API_KEY = ''  # CENSORED
 MAPS_STATIC_URL_START = 'https://maps.googleapis.com/maps/api/staticmap?center='
-MAPS_MARKER = '&markers='
+MAPS_MARKER_PREFIX = '&markers='
 MAP_SIZE_WIDTH = '640'  # max size is 640 for free accounts
 MAP_SIZE_HEIGHT = '480'  # max size is 640 for free accounts
 MAP_SIZE = ''.join(['&size=', MAP_SIZE_WIDTH, 'x', MAP_SIZE_HEIGHT])
-MAP_SCALE = '&scale=2'  # max scaling for free accounts
+MAP_SCALE = '&scale=2'  # max scaling is 2 for 640x640 for free accounts
 MAP_ZOOM = '&zoom=7'
 MAP_TYPE = '&maptype=roadmap'
 
 MAPS_GEOCODE_ENDPOINT = 'https://maps.googleapis.com/maps/api/geocode/json'
-
-# Twilio Credentials
-TWILIO_SID = ''  # CENSORED
-TWILIO_AUTH = ''  # CENSORED
-TWILIO_NUMBER = ''  # CENSORED
-TWILIO_DEFAULT_TO = ''  # CENSORED
 twilio_client = Client(TWILIO_SID, TWILIO_AUTH)
-
-# don't forget to install ngrok and update your active number webhooks once it's running
-# choco install ngrok.portable
-# ngrok http -host-header="localhost:8000" 8000
-ngrok_url = 'https://fa0be0c9.ngrok.io'
 
 coord_areas = [dict(
     location='Denver, CO',
@@ -142,7 +148,7 @@ def alertmap():
                 coord_areas = [area for area in coord_areas if area['location'] != request.form.get("text_alert_location")]
 
     # access our global variable to retrieve our access tokens
-    global access
+    global smartcar_access
     # the list of vehicle ids
     vehicle_ids = smartcar.get_vehicle_ids(smartcar_access['access_token'])['vehicles']
     # instantiate the first vehicle in the vehicle id list
@@ -166,7 +172,7 @@ def alertmap():
         MAP_ZOOM,
         MAP_SCALE,
         MAP_TYPE,
-        MAPS_MARKER, str_loc,
+        MAPS_MARKER_PREFIX, str_loc,
         encoded_area_coords,
         '&key=', MAPS_API_KEY])
     return render_template('alertmap.html', coord_table = coord_table, map_img = map_static)
@@ -187,12 +193,13 @@ def sms():
     if len(body) < 3:
         return
     if body[0:3].lower() == 'ack':
-        msg_history = twilio_client.messages.list()
         # https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior
         # Fri, 04 Sep 2015 22:54:41 +0000
         # %a, %m %b %Y %H:%M:%S %z
         # 2019-03-10 04:33:45+00:00
         # %Y-%m-%d %H:%M:%S+00:00
+        msg_history = twilio_client.messages.list()
+        # get most recently sent message
         # https://dbader.org/blog/python-min-max-and-nested-lists
         most_recent_msg = max(msg_history, key=lambda m: m.date_sent if m.date_sent != None else datetime.datetime.strptime('0001-01-01 00:00:00+0000', '%Y-%m-%d %H:%M:%S%z'))
         global coord_areas
@@ -204,25 +211,12 @@ def sms():
 
 
 def send_tts(msg):
-    # parsed_template = render_template('tts.xml', tts_text = msg)
-    # with open('temp_tts.xml', 'w+') as f:
-    #     f.write(parsed_template)
     preencode = {'msg':msg}
     call = twilio_client.calls.create(
         to=TWILIO_DEFAULT_TO,
         from_=TWILIO_NUMBER,
-        # url=render_template('tts.xml', tts_text = msg)
-        # Template(render_template('tts.xml')).stream(tts_text = msg).dump('temp_tts.xml')
-        # url=''.join([ngrok_url, '/temp_tts.xml'])
-        # url=''.join(['/voice?msg=', msg])
         url=''.join([ngrok_url, '/voice?', urllib.parse.urlencode(preencode)])
     )
-    # resp = VoiceResponse()
-    # resp.say(msg, voice='alice')
-    # resp.redirect('/voice', code=307)
-    # return str(resp)
-    # press 1 to acknowledge, delete area
-    # press 2 or hang up (no response), no change
 
 @app.route("/voice", methods=['GET', 'POST'])
 def voice():
@@ -265,6 +259,7 @@ def circle_marker(lat, lon, circle_radius, earth_radius, precision):
         c_lon = ((lon_rad + math.atan2(math.sin(angle_rad)*math.sin(radius_rad)*math.cos(lat_rad), math.cos(radius_rad) - math.sin(lat_rad)*math.sin(c_lat)))*180.0)/math.pi
         c_lat = c_lat*180.0/math.pi
         circle_coord.append((c_lat, c_lon))
+    # TODO: generate a random color for each area instead of always making it red
     return ''.join(['&path=fillcolor:0xAA000033%7Ccolor:0xFFFFFF00%7Cenc:', polyline.encode(circle_coord, precision).replace('|', '%7C')])
 
 def circle_markers(coord_areas):
@@ -298,4 +293,4 @@ def update_distances(lat, lon, coord_areas):
 
 
 if __name__ == '__main__':
-    app.run(port=8000)
+    app.run(port=PORT)

@@ -2,7 +2,9 @@
 
 ### a proximity-based alert system that sends you an SMS or voice call when your smart-car approaches one of your alert locations
 
-[Devpost Link](https://devpost.com/software/driveby-k0fan7)
+## Runner-up in the SmartCar "Best Car App" challenge!
+
+**[Devpost Link](https://devpost.com/software/driveby-k0fan7)**
 
 This project utilizes the following SDKs/services/APIs: (as such it also requires authentication keys for the following in order to run, with the exception of ngrok)
 
